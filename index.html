@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мобильные шахматы онлайн</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+            padding: 15px;
+            padding-bottom: 80px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0f3460;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            color: #e94560;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            color: #8f9ba8;
+            font-size: 0.9rem;
+        }
+        
+        .status-bar {
+            background-color: #0f3460;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .player-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .white-player {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .black-player {
+            background-color: #333;
+            color: #f0f0f0;
+        }
+        
+        .player-name {
+            font-weight: 600;
+        }
+        
+        .timer {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        #chessboard {
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 1 / 1;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 3px solid #0f3460;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+        
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            user-select: none;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .light {
+            background-color: #f0d9b5;
+        }
+        
+        .dark {
+            background-color: #b58863;
+        }
+        
+        .selected {
+            box-shadow: inset 0 0 0 3px #e94560;
+        }
+        
+        .possible-move {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(233, 69, 96, 0.5);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .capture-move {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 5px solid rgba(233, 69, 96, 0.5);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        .last-move {
+            background-color: rgba(255, 255, 0, 0.3);
+        }
+        
+        .notation {
+            color: #333;
+            font-size: 0.7rem;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-weight: bold;
+        }
+        
+        .dark .notation {
+            color: #f0f0f0;
+        }
+        
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .menu-btn {
+            background-color: #0f3460;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 16px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .menu-btn:hover, .menu-btn:active {
+            background-color: #e94560;
+            transform: translateY(-2px);
+        }
+        
+        .menu-btn:active {
+            transform: translateY(0);
+        }
+        
+        .menu-btn i {
+            font-size: 1.2rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #16213e;
+            border-radius: 15px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #e94560;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #8f9ba8;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .matchmaking-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .option-btn {
+            background-color: #0f3460;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 14px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        
+        .option-btn:hover, .option-btn:active {
+            background-color: #e94560;
+        }
+        
+        .searching {
+            background-color: #e94560;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .game-over {
+            text-align: center;
+        }
+        
+        .game-over h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #e94560;
+        }
+        
+        .move-history {
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: #0f3460;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .move-history h4 {
+            margin-bottom: 10px;
+            color: #e94560;
+            text-align: center;
+        }
+        
+        .moves-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+        
+        .move-item {
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .move-item:nth-child(odd) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-message {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: rgba(233, 69, 96, 0.2);
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #0f3460;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #8f9ba8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        .nav-btn.active {
+            color: #e94560;
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .status-bar {
+                padding: 10px;
+            }
+            
+            .player-name {
+                font-size: 0.9rem;
+            }
+            
+            .timer {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chess"></i> Мобильные шахматы</h1>
+            <div class="subtitle">Играйте онлайн на телефоне в одном файле</div>
+        </header>
+        
+        <div class="status-bar">
+            <div class="player-info">
+                <div class="player-icon white-player"><i class="fas fa-chess-king"></i></div>
+                <div>
+                    <div class="player-name">Белые (Вы)</div>
+                    <div class="timer" id="white-timer">10:00</div>
+                </div>
+            </div>
+            
+            <div class="player-info">
+                <div>
+                    <div class="player-name" style="text-align: right;">Черные (Соперник)</div>
+                    <div class="timer" id="black-timer">10:00</div>
+                </div>
+                <div class="player-icon black-player"><i class="fas fa-chess-king"></i></div>
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <div id="chessboard"></div>
+            <div class="status-message" id="status-message">Ваш ход. Игра началась!</div>
+            
+            <div class="move-history">
+                <h4>История ходов</h4>
+                <div class="moves-list" id="moves-list"></div>
+            </div>
+        </div>
+        
+        <div class="menu">
+            <button class="menu-btn" id="find-match-btn">
+                <i class="fas fa-search"></i> Найти игру
+            </button>
+            <button class="menu-btn" id="restart-btn">
+                <i class="fas fa-redo"></i> Новая игра
+            </button>
+            <button class="menu-btn" id="rules-btn">
+                <i class="fas fa-book"></i> Правила
+            </button>
+        </div>
+    </div>
+    
+    <div class="bottom-nav">
+        <button class="nav-btn active" id="nav-game"><i class="fas fa-chess-board"></i></button>
+        <button class="nav-btn" id="nav-matchmaking"><i class="fas fa-users"></i></button>
+        <button class="nav-btn" id="nav-history"><i class="fas fa-history"></i></button>
+        <button class="nav-btn" id="nav-settings"><i class="fas fa-cog"></i></button>
+    </div>
+    
+    <!-- Модальное окно поиска матча -->
+    <div class="modal" id="matchmaking-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Поиск соперника</h3>
+                <button class="close-btn" id="close-matchmaking">&times;</button>
+            </div>
+            <div class="matchmaking-options">
+                <button class="option-btn" id="quick-match">Быстрый матч</button>
+                <button class="option-btn" id="play-friend">Игра с другом</button>
+                <button class="option-btn" id="play-computer">Игра с компьютером</button>
+                <div id="searching-status" style="display: none; text-align: center; padding: 20px;">
+                    <div style="font-size: 1.2rem; margin-bottom: 10px;"><i class="fas fa-spinner fa-spin"></i> Поиск соперника...</div>
+                    <div id="search-time">0:05</div>
+                    <button class="option-btn" id="cancel-search" style="margin-top: 20px;">Отменить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно правил -->
+    <div class="modal" id="rules-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Правила игры</h3>
+                <button class="close-btn" id="close-rules">&times;</button>
+            </div>
+            <div style="line-height: 1.6;">
+                <p><strong>Цель игры</strong> - поставить мат королю соперника.</p>
+                <p><strong>Ходы фигур:</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 15px;">
+                    <li>Пешка: на 1 клетку вперед, первый ход - на 2</li>
+                    <li>Ладья: по горизонтали и вертикали</li>
+                    <li>Конь: буквой "Г"</li>
+                    <li>Слон: по диагонали</li>
+                    <li>Ферзь: в любом направлении</li>
+                    <li>Король: на 1 клетку в любом направлении</li>
+                </ul>
+                <p>Играйте, нажимая на фигуру, затем на клетку для хода.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно окончания игры -->
+    <div class="modal" id="gameover-modal">
+        <div class="modal-content">
+            <div class="game-over">
+                <h3 id="game-result">Победа!</h3>
+                <p id="game-result-desc">Вы выиграли партию</p>
+                <div style="margin: 20px 0;">
+                    <button class="option-btn" id="play-again">Играть еще раз</button>
+                    <button class="option-btn" id="back-to-menu">В меню</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Инициализация игры
+        document.addEventListener('DOMContentLoaded', function() {
+            // Игровые переменные
+            let gameState = {
+                board: [],
+                currentPlayer: 'white',
+                selectedSquare: null,
+                possibleMoves: [],
+                moveHistory: [],
+                gameActive: false,
+                timers: {
+                    white: 600, // 10 минут в секундах
+                    black: 600
+                },
+                timerInterval: null,
+                matchmaking: false,
+                vsComputer: false
+            };
+            
+            // Шахматные фигуры в Unicode
+            const pieces = {
+                'wr': '♖', 'wn': '♘', 'wb': '♗', 'wq': '♕', 'wk': '♔', 'wp': '♙',
+                'br': '♜', 'bn': '♞', 'bb': '♝', 'bq': '♛', 'bk': '♚', 'bp': '♟'
+            };
+            
+            // Начальная позиция
+            const initialBoard = [
+                ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
+                ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
+                ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
+            ];
+            
+            // Инициализация доски
+            function initBoard() {
+                gameState.board = JSON.parse(JSON.stringify(initialBoard));
+                gameState.currentPlayer = 'white';
+                gameState.selectedSquare = null;
+                gameState.possibleMoves = [];
+                gameState.moveHistory = [];
+                gameState.gameActive = true;
+                
+                // Сброс таймеров
+                gameState.timers.white = 600;
+                gameState.timers.black = 600;
+                
+                // Обновление отображения таймеров
+                updateTimers();
+                
+                // Запуск таймера, если игра активна
+                if (gameState.timerInterval) {
+                    clearInterval(gameState.timerInterval);
+                }
+                
+                if (gameState.gameActive) {
+                    gameState.timerInterval = setInterval(updateGameTimers, 1000);
+                }
+                
+                renderBoard();
+                updateStatusMessage('Игра началась! Ваш ход (белые).');
+                updateMoveHistory();
+            }
+            
+            // Рендеринг доски
+            function renderBoard() {
+                const chessboard = document.getElementById('chessboard');
+                chessboard.innerHTML = '';
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const square = document.createElement('div');
+                        square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                        square.dataset.row = row;
+                        square.dataset.col = col;
+                        
+                        // Добавление обозначений клеток
+                        const notation = document.createElement('div');
+                        notation.className = 'notation';
+                        
+                        if (row === 7) {
+                            notation.textContent = String.fromCharCode(97 + col);
+                        }
+                        if (col === 0) {
+                            notation.textContent = 8 - row;
+                        }
+                        
+                        square.appendChild(notation);
+                        
+                        // Добавление фигуры
+                        const piece = gameState.board[row][col];
+                        if (piece) {
+                            const pieceElement = document.createElement('div');
+                            pieceElement.textContent = pieces[piece];
+                            pieceElement.style.cursor = 'pointer';
+                            square.appendChild(pieceElement);
+                        }
+                        
+                        // Подсветка выбранной клетки
+                        if (gameState.selectedSquare && 
+                            gameState.selectedSquare.row === row && 
+                            gameState.selectedSquare.col === col) {
+                            square.classList.add('selected');
+                        }
+                        
+                        // Подсветка возможных ходов
+                        const isPossibleMove = gameState.possibleMoves.some(move => 
+                            move.row === row && move.col === col
+                        );
+                        
+                        if (isPossibleMove) {
+                            const moveIndicator = document.createElement('div');
+                            const pieceAtTarget = gameState.board[row][col];
+                            
+                            if (pieceAtTarget) {
+                                moveIndicator.className = 'capture-move';
+                            } else {
+                                moveIndicator.className = 'possible-move';
+                            }
+                            
+                            square.appendChild(moveIndicator);
+                        }
+                        
+                        // Обработчик клика по клетке
+                        square.addEventListener('click', () => handleSquareClick(row, col));
+                        chessboard.appendChild(square);
+                    }
+                }
+            }
+            
+            // Обработка клика по клетке
+            function handleSquareClick(row, col) {
+                if (!gameState.gameActive) return;
+                
+                const piece = gameState.board[row][col];
+                
+                // Если выбрана фигура текущего игрока
+                if (piece && piece.startsWith(gameState.currentPlayer[0])) {
+                    gameState.selectedSquare = { row, col };
+                    gameState.possibleMoves = calculatePossibleMoves(row, col, piece);
+                    renderBoard();
+                    updateStatusMessage(`Выбрана фигура. Доступно ходов: ${gameState.possibleMoves.length}`);
+                }
+                // Если выбрана клетка для хода
+                else if (gameState.selectedSquare && gameState.possibleMoves.some(move => move.row === row && move.col === col)) {
+                    makeMove(gameState.selectedSquare.row, gameState.selectedSquare.col, row, col);
+                }
+                // Отмена выбора
+                else {
+                    gameState.selectedSquare = null;
+                    gameState.possibleMoves = [];
+                    renderBoard();
+                    updateStatusMessage('Выбор отменен.');
+                }
+            }
+            
+            // Вычисление возможных ходов (упрощенная версия)
+            function calculatePossibleMoves(row, col, piece) {
+                const moves = [];
+                const color = piece[0]; // 'w' или 'b'
+                
+                // Для упрощения реализуем только базовые ходы пешки
+                if (piece[1] === 'p') { // Пешка
+                    const direction = color === 'w' ? -1 : 1;
+                    const startRow = color === 'w' ? 6 : 1;
+                    
+                    // Ход вперед на одну клетку
+                    if (isValidSquare(row + direction, col) && !gameState.board[row + direction][col]) {
+                        moves.push({row: row + direction, col});
+                        
+                        // Ход вперед на две клетки с начальной позиции
+                        if (row === startRow && !gameState.board[row + 2 * direction][col]) {
+                            moves.push({row: row + 2 * direction, col});
+                        }
+                    }
+                    
+                    // Взятие по диагонали
+                    if (isValidSquare(row + direction, col - 1) && 
+                        gameState.board[row + direction][col - 1] && 
+                        gameState.board[row + direction][col - 1][0] !== color) {
+                        moves.push({row: row + direction, col: col - 1});
+                    }
+                    
+                    if (isValidSquare(row + direction, col + 1) && 
+                        gameState.board[row + direction][col + 1] && 
+                        gameState.board[row + direction][col + 1][0] !== color) {
+                        moves.push({row: row + direction, col: col + 1});
+                    }
+                }
+                // Для других фигур - упрощенные ходы
+                else {
+                    const pieceType = piece[1];
+                    
+                    // Ладья (вертикаль/горизонталь)
+                    if (pieceType === 'r' || pieceType === 'q') {
+                        const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                        directions.forEach(([dr, dc]) => {
+                            let r = row + dr;
+                            let c = col + dc;
+                            while (isValidSquare(r, c)) {
+                                if (!gameState.board[r][c]) {
+                                    moves.push({row: r, col: c});
+                                } else {
+                                    if (gameState.board[r][c][0] !== color) {
+                                        moves.push({row: r, col: c});
+                                    }
+                                    break;
+                                }
+                                r += dr;
+                                c += dc;
+                            }
+                        });
+                    }
+                    
+                    // Слон (диагональ)
+                    if (pieceType === 'b' || pieceType === 'q') {
+                        const directions = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+                        directions.forEach(([dr, dc]) => {
+                            let r = row + dr;
+                            let c = col + dc;
+                            while (isValidSquare(r, c)) {
+                                if (!gameState.board[r][c]) {
+                                    moves.push({row: r, col: c});
+                                } else {
+                                    if (gameState.board[r][c][0] !== color) {
+                                        moves.push({row: r, col: c});
+                                    }
+                                    break;
+                                }
+                                r += dr;
+                                c += dc;
+                            }
+                        });
+                    }
+                    
+                    // Конь
+                    if (pieceType === 'n') {
+                        const knightMoves = [
+                            [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+                            [1, -2], [1, 2], [2, -1], [2, 1]
+                        ];
+                        knightMoves.forEach(([dr, dc]) => {
+                            const r = row + dr;
+                            const c = col + dc;
+                            if (isValidSquare(r, c)) {
+                                if (!gameState.board[r][c] || gameState.board[r][c][0] !== color) {
+                                    moves.push({row: r, col: c});
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Король
+                    if (pieceType === 'k') {
+                        const kingMoves = [
+                            [-1, -1], [-1, 0], [-1, 1],
+                            [0, -1], [0, 1],
+                            [1, -1], [1, 0], [1, 1]
+                        ];
+                        kingMoves.forEach(([dr, dc]) => {
+                            const r = row + dr;
+                            const c = col + dc;
+                            if (isValidSquare(r, c)) {
+                                if (!gameState.board[r][c] || gameState.board[r][c][0] !== color) {
+                                    moves.push({row: r, col: c});
+                                }
+                            }
+                        });
+                    }
+                }
+                
+                return moves;
+            }
+            
+            // Проверка валидности клетки
+            function isValidSquare(row, col) {
+                return row >= 0 && row < 8 && col >= 0 && col < 8;
+            }
+            
+            // Совершение хода
+            function makeMove(fromRow, fromCol, toRow, toCol) {
+                const piece = gameState.board[fromRow][fromCol];
+                const targetPiece = gameState.board[toRow][toCol];
+                
+                // Запись хода в историю
+                const fromNotation = `${String.fromCharCode(97 + fromCol)}${8 - fromRow}`;
+                const toNotation = `${String.fromCharCode(97 + toCol)}${8 - toRow}`;
+                const moveNumber = Math.floor(gameState.moveHistory.length / 2) + 1;
+                
+                if (gameState.currentPlayer === 'white') {
+                    gameState.moveHistory.push(`${moveNumber}. ${fromNotation}${toNotation}`);
+                } else {
+                    const lastMove = gameState.moveHistory[gameState.moveHistory.length - 1];
+                    gameState.moveHistory[gameState.moveHistory.length - 1] = `${lastMove} ${fromNotation}${toNotation}`;
+                }
+                
+                // Выполнение хода
+                gameState.board[toRow][toCol] = piece;
+                gameState.board[fromRow][fromCol] = '';
+                
+                // Проверка на превращение пешки
+                if (piece[1] === 'p') {
+                    const promotionRow = piece[0] === 'w' ? 0 : 7;
+                    if (toRow === promotionRow) {
+                        gameState.board[toRow][toCol] = piece[0] + 'q'; // Всегда превращаем в ферзя для простоты
+                    }
+                }
+                
+                // Смена игрока
+                gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+                gameState.selectedSquare = null;
+                gameState.possibleMoves = [];
+                
+                // Обновление интерфейса
+                renderBoard();
+                updateMoveHistory();
+                
+                // Проверка на конец игры
+                checkGameEnd();
+                
+                // Обновление статуса
+                updateStatusMessage(`Ход ${gameState.currentPlayer === 'white' ? 'белых' : 'черных'}.`);
+                
+                // Если игра с компьютером и сейчас его ход
+                if (gameState.vsComputer && gameState.currentPlayer === 'black' && gameState.gameActive) {
+                    setTimeout(makeComputerMove, 1000);
+                }
+            }
+            
+            // Ход компьютера (очень простой ИИ)
+            function makeComputerMove() {
+                if (!gameState.gameActive || gameState.currentPlayer !== 'black') return;
+                
+                // Найти все возможные ходы черных
+                const allMoves = [];
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = gameState.board[row][col];
+                        if (piece && piece[0] === 'b') {
+                            const moves = calculatePossibleMoves(row, col, piece);
+                            moves.forEach(move => {
+                                allMoves.push({
+                                    fromRow: row,
+                                    fromCol: col,
+                                    toRow: move.row,
+                                    toCol: move.col,
+                                    piece: piece
+                                });
+                            });
+                        }
+                    }
+                }
+                
+                // Выбрать случайный ход
+                if (allMoves.length > 0) {
+                    const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+                    
+                    // Небольшая задержка для реалистичности
+                    setTimeout(() => {
+                        makeMove(randomMove.fromRow, randomMove.fromCol, randomMove.toRow, randomMove.toCol);
+                    }, 500);
+                }
+            }
+            
+            // Проверка окончания игры
+            function checkGameEnd() {
+                // Упрощенная проверка (реализуем только проверку на наличие ходов)
+                let hasMoves = false;
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const piece = gameState.board[row][col];
+                        if (piece && piece.startsWith(gameState.currentPlayer[0])) {
+                            const moves = calculatePossibleMoves(row, col, piece);
+                            if (moves.length > 0) {
+                                hasMoves = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasMoves) break;
+                }
+                
+                if (!hasMoves) {
+                    gameState.gameActive = false;
+                    clearInterval(gameState.timerInterval);
+                    
+                    // Проверка на шах
+                    const kingPiece = gameState.currentPlayer[0] + 'k';
+                    let kingFound = false;
+                    
+                    for (let row = 0; row < 8; row++) {
+                        for (let col = 0; col < 8; col++) {
+                            if (gameState.board[row][col] === kingPiece) {
+                                kingFound = true;
+                                break;
+                            }
+                        }
+                        if (kingFound) break;
+                    }
+                    
+                    if (kingFound) {
+                        // Пат
+                        showGameOver('Пат! Ничья.', 'Ни один игрок не может сделать ход без нарушения правил.');
+                    } else {
+                        // Мат
+                        const winner = gameState.currentPlayer === 'white' ? 'Черные' : 'Белые';
+                        showGameOver(`Мат! Победили ${winner}.`, `${winner} поставили мат королю противника.`);
+                    }
+                }
+            }
+            
+            // Показать экран окончания игры
+            function showGameOver(title, description) {
+                document.getElementById('game-result').textContent = title;
+                document.getElementById('game-result-desc').textContent = description;
+                document.getElementById('gameover-modal').style.display = 'flex';
+            }
+            
+            // Обновление истории ходов
+            function updateMoveHistory() {
+                const movesList = document.getElementById('moves-list');
+                movesList.innerHTML = '';
+                
+                gameState.moveHistory.forEach((move, index) => {
+                    const moveItem = document.createElement('div');
+                    moveItem.className = 'move-item';
+                    moveItem.textContent = move;
+                    movesList.appendChild(moveItem);
+                });
+                
+                // Прокрутка к последнему ходу
+                if (movesList.lastChild) {
+                    movesList.lastChild.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            // Обновление таймеров
+            function updateGameTimers() {
+                if (!gameState.gameActive) return;
+                
+                if (gameState.currentPlayer === 'white') {
+                    gameState.timers.white--;
+                    if (gameState.timers.white <= 0) {
+                        gameState.timers.white = 0;
+                        gameState.gameActive = false;
+                        clearInterval(gameState.timerInterval);
+                        showGameOver('Время вышло! Победили черные.', 'У белых закончилось время.');
+                    }
+                } else {
+                    gameState.timers.black--;
+                    if (gameState.timers.black <= 0) {
+                        gameState.timers.black = 0;
+                        gameState.gameActive = false;
+                        clearInterval(gameState.timerInterval);
+                        showGameOver('Время вышло! Победили белые.', 'У черных закончилось время.');
+                    }
+                }
+                
+                updateTimers();
+            }
+            
+            // Обновление отображения таймеров
+            function updateTimers() {
+                const whiteMinutes = Math.floor(gameState.timers.white / 60);
+                const whiteSeconds = gameState.timers.white % 60;
+                document.getElementById('white-timer').textContent = 
+                    `${whiteMinutes}:${whiteSeconds < 10 ? '0' : ''}${whiteSeconds}`;
+                
+                const blackMinutes = Math.floor(gameState.timers.black / 60);
+                const blackSeconds = gameState.timers.black % 60;
+                document.getElementById('black-timer').textContent = 
+                    `${blackMinutes}:${blackSeconds < 10 ? '0' : ''}${blackSeconds}`;
+            }
+            
+            // Обновление статусного сообщения
+            function updateStatusMessage(message) {
+                document.getElementById('status-message').textContent = message;
+            }
+            
+            // Поиск матча
+            function startMatchmaking(mode) {
+                gameState.matchmaking = true;
+                gameState.vsComputer = mode === 'computer';
+                
+                document.getElementById('searching-status').style.display = 'block';
+                document.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+                
+                let searchTime = 0;
+                const searchTimer = setInterval(() => {
+                    searchTime++;
+                    const minutes = Math.floor(searchTime / 60);
+                    const seconds = searchTime % 60;
+                    document.getElementById('search-time').textContent = 
+                        `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                    
+                    // Имитация нахождения соперника
+                    if (searchTime >= 3 && !gameState.gameActive) {
+                        clearInterval(searchTimer);
+                        document.getElementById('matchmaking-modal').style.display = 'none';
+                        
+                        if (mode === 'computer') {
+                            updateStatusMessage('Игра с компьютером началась! Ваш ход.');
+                        } else {
+                            updateStatusMessage('Соперник найден! Игра началась.');
+                        }
+                        
+                        initBoard();
+                        gameState.matchmaking = false;
+                    }
+                }, 1000);
+                
+                // Кнопка отмены поиска
+                document.getElementById('cancel-search').onclick = function() {
+                    clearInterval(searchTimer);
+                    gameState.matchmaking = false;
+                    document.getElementById('matchmaking-modal').style.display = 'none';
+                    updateStatusMessage('Поиск отменен.');
+                };
+            }
+            
+            // Инициализация событий
+            function initEvents() {
+                // Кнопка поиска матча
+                document.getElementById('find-match-btn').addEventListener('click', function() {
+                    document.getElementById('matchmaking-modal').style.display = 'flex';
+                });
+                
+                // Закрытие модального окна правил
+                document.getElementById('close-rules').addEventListener('click', function() {
+                    document.getElementById('rules-modal').style.display = 'none';
+                });
+                
+                // Кнопки окна окончания игры
+                document.getElementById('play-again').addEventListener('click', function() {
+                    document.getElementById('gameover-modal').style.display = 'none';
+                    initBoard();
+                });
+                
+                document.getElementById('back-to-menu').addEventListener('click', function() {
+                    document.getElementById('gameover-modal').style.display = 'none';
+                });
+                
+                // Навигация
+                const navButtons = document.querySelectorAll('.nav-btn');
+                navButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        navButtons.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const navId = this.id;
+                        switch(navId) {
+                            case 'nav-game':
+                                document.querySelector('.game-container').style.display = 'flex';
+                                document.querySelector('.menu').style.display = 'flex';
+                                break;
+                            case 'nav-matchmaking':
+                                document.querySelector('.game-container').style.display = 'none';
+                                document.querySelector('.menu').style.display = 'none';
+                                document.getElementById('matchmaking-modal').style.display = 'flex';
+                                break;
+                            case 'nav-history':
+                                document.querySelector('.game-container').style.display = 'none';
+                                document.querySelector('.menu').style.display = 'none';
+                                alert('История игр будет доступна в полной версии приложения.');
+                                break;
+                            case 'nav-settings':
+                                document.querySelector('.game-container').style.display = 'none';
+                                document.querySelector('.menu').style.display = 'none';
+                                alert('Настройки будут доступны в полной версии приложения.');
+                                break;
+                        }
+                    });
+                });
+                
+                // Закрытие модальных окон при клике вне их
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            this.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Запуск игры
+            initBoard();
+            initEvents();
+        });
+    </script>
+</body>
+</html>
