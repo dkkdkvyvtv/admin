@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Tic-Tac-Toe | Современные крестики-нолики</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            width: 100%;
+        }
+        
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+        
+        /* Главное меню */
+        .menu-screen, .game-screen {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .menu-title {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .menu-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.7;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .mode-btn {
+            background: linear-gradient(90deg, #4776E6, #8E54E9);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 10px 20px rgba(71, 118, 230, 0.3);
+        }
+        
+        .mode-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(71, 118, 230, 0.4);
+        }
+        
+        .mode-btn i {
+            font-size: 1.5rem;
+        }
+        
+        .mode-btn.secondary {
+            background: linear-gradient(90deg, #11998e, #38ef7d);
+            box-shadow: 0 10px 20px rgba(17, 153, 142, 0.3);
+        }
+        
+        .mode-btn.secondary:hover {
+            box-shadow: 0 15px 30px rgba(17, 153, 142, 0.4);
+        }
+        
+        /* Игровое поле */
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .player-turn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+        
+        .player-x {
+            color: #00dbde;
+        }
+        
+        .player-o {
+            color: #fc00ff;
+        }
+        
+        .turn-icon {
+            font-size: 1.8rem;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.03);
+        }
+        
+        .cell.x {
+            color: #00dbde;
+            text-shadow: 0 0 20px rgba(0, 219, 222, 0.5);
+        }
+        
+        .cell.o {
+            color: #fc00ff;
+            text-shadow: 0 0 20px rgba(252, 0, 255, 0.5);
+        }
+        
+        /* Кнопки управления */
+        .game-controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            padding: 15px 30px;
+            border-radius: 16px;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(90deg, #FF416C, #FF4B2B);
+            color: white;
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.3);
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 65, 108, 0.4);
+        }
+        
+        .menu-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Экран результата */
+        .result-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        .result-screen.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .result-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 50px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
+            transition: transform 0.5s ease;
+        }
+        
+        .result-screen.active .result-content {
+            transform: scale(1);
+        }
+        
+        .result-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        
+        .win-x .result-icon {
+            color: #00dbde;
+        }
+        
+        .win-o .result-icon {
+            color: #fc00ff;
+        }
+        
+        .draw .result-icon {
+            color: #ffcc00;
+        }
+        
+        .result-title {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        
+        .result-message {
+            font-size: 1.3rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        
+        .result-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .menu-screen, .game-screen {
+                padding: 30px 20px;
+            }
+            
+            .logo {
+                font-size: 2.8rem;
+            }
+            
+            .game-board {
+                max-width: 350px;
+            }
+            
+            .cell {
+                font-size: 3.5rem;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 2.2rem;
+            }
+            
+            .menu-title {
+                font-size: 1.8rem;
+            }
+            
+            .game-board {
+                max-width: 300px;
+                gap: 10px;
+            }
+            
+            .cell {
+                font-size: 3rem;
+            }
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        footer {
+            margin-top: 30px;
+            opacity: 0.6;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">NEXUS TIC-TAC-TOE</div>
+            <div class="tagline">Классическая игра в современном дизайне</div>
+        </header>
+        
+        <!-- Главное меню -->
+        <div class="menu-screen fade-in" id="menuScreen">
+            <h2 class="menu-title">Выберите режим игры</h2>
+            <p class="menu-subtitle">Сразитесь с другом или испытайте себя против ИИ</p>
+            
+            <div class="mode-buttons">
+                <button class="mode-btn" id="vsBotBtn">
+                    <i class="fas fa-robot"></i>
+                    <span>Против ИИ</span>
+                </button>
+                <button class="mode-btn secondary" id="vsPlayerBtn">
+                    <i class="fas fa-users"></i>
+                    <span>Два игрока</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Игровой экран -->
+        <div class="game-screen hidden" id="gameScreen">
+            <div class="game-info">
+                <div class="player-turn" id="playerTurn">
+                    <i class="fas fa-user turn-icon player-x"></i>
+                    <span>Ход: <span class="player-x">Игрок X</span></span>
+                </div>
+                <div class="game-mode" id="gameMode">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Режим: Два игрока</span>
+                </div>
+            </div>
+            
+            <div class="game-board" id="gameBoard">
+                <!-- Клетки будут созданы через JS -->
+            </div>
+            
+            <div class="game-controls">
+                <button class="control-btn restart-btn" id="restartBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>Начать заново</span>
+                </button>
+                <button class="control-btn menu-btn" id="backToMenuBtn">
+                    <i class="fas fa-home"></i>
+                    <span>В меню</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Экран результата -->
+    <div class="result-screen" id="resultScreen">
+        <div class="result-content">
+            <div class="result-icon" id="resultIcon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h2 class="result-title" id="resultTitle">Победа!</h2>
+            <p class="result-message" id="resultMessage">Игрок X одержал победу!</p>
+            <div class="result-buttons">
+                <button class="control-btn restart-btn" id="resultRestartBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>Играть снова</span>
+                </button>
+                <button class="control-btn menu-btn" id="resultMenuBtn">
+                    <i class="fas fa-home"></i>
+                    <span>В меню</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        Nexus Tic-Tac-Toe © 2023 | Создано с использованием HTML, CSS и JavaScript
+    </footer>
+
+    <script>
+        // Элементы DOM
+        const menuScreen = document.getElementById('menuScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const gameBoard = document.getElementById('gameBoard');
+        const playerTurn = document.getElementById('playerTurn');
+        const gameMode = document.getElementById('gameMode');
+        const resultScreen = document.getElementById('resultScreen');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultMessage = document.getElementById('resultMessage');
+        const resultIcon = document.getElementById('resultIcon');
+        
+        // Кнопки
+        const vsBotBtn = document.getElementById('vsBotBtn');
+        const vsPlayerBtn = document.getElementById('vsPlayerBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const backToMenuBtn = document.getElementById('backToMenuBtn');
+        const resultRestartBtn = document.getElementById('resultRestartBtn');
+        const resultMenuBtn = document.getElementById('resultMenuBtn');
+        
+        // Игровые переменные
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let gameState = ['', '', '', '', '', '', '', '', ''];
+        let vsAI = false;
+        
+        // Сообщения
+        const winMessage = () => `Победа! Игрок ${currentPlayer} выиграл!`;
+        const drawMessage = () => `Ничья!`;
+        const currentPlayerTurn = () => `Ход: Игрок ${currentPlayer}`;
+        
+        // Условия победы
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Горизонтали
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Вертикали
+            [0, 4, 8], [2, 4, 6]             // Диагонали
+        ];
+        
+        // Инициализация игрового поля
+        function initializeBoard() {
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.setAttribute('data-index', i);
+                cell.addEventListener('click', () => cellClicked(i));
+                gameBoard.appendChild(cell);
+            }
+        }
+        
+        // Обработка клика по клетке
+        function cellClicked(cellIndex) {
+            // Проверка можно ли ходить в эту клетку
+            if (gameState[cellIndex] !== '' || !gameActive) {
+                return;
+            }
+            
+            // Ход игрока
+            makeMove(cellIndex);
+            
+            // Если режим с ИИ и игра активна - ход ИИ
+            if (vsAI && gameActive && currentPlayer === 'O') {
+                setTimeout(makeAIMove, 500);
+            }
+        }
+        
+        // Сделать ход
+        function makeMove(cellIndex) {
+            gameState[cellIndex] = currentPlayer;
+            const cell = document.querySelector(`.cell[data-index="${cellIndex}"]`);
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+            
+            // Проверка победы
+            checkResult();
+            
+            // Смена игрока если игра продолжается
+            if (gameActive) {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                updatePlayerTurn();
+            }
+        }
+        
+        // Ход ИИ (простой алгоритм)
+        function makeAIMove() {
+            if (!gameActive) return;
+            
+            // Сначала попробовать выиграть
+            let move = findWinningMove('O');
+            
+            // Если нет выигрышного хода, заблокировать игрока
+            if (move === -1) {
+                move = findWinningMove('X');
+            }
+            
+            // Если нет блокирующего хода, выбрать случайную свободную клетку
+            if (move === -1) {
+                const availableCells = gameState
+                    .map((val, idx) => val === '' ? idx : null)
+                    .filter(val => val !== null);
+                
+                if (availableCells.length > 0) {
+                    move = availableCells[Math.floor(Math.random() * availableCells.length)];
+                }
+            }
+            
+            if (move !== -1) {
+                makeMove(move);
+            }
+        }
+        
+        // Найти выигрышный ход для указанного игрока
+        function findWinningMove(player) {
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                const condition = [gameState[a], gameState[b], gameState[c]];
+                
+                // Подсчет пустых клеток и клеток игрока
+                let emptyCount = 0;
+                let playerCount = 0;
+                let emptyIndex = -1;
+                
+                for (let j = 0; j < 3; j++) {
+                    const index = winningConditions[i][j];
+                    if (gameState[index] === '') {
+                        emptyCount++;
+                        emptyIndex = index;
+                    } else if (gameState[index] === player) {
+                        playerCount++;
+                    }
+                }
+                
+                // Если есть две клетки игрока и одна пустая - вернуть пустую
+                if (playerCount === 2 && emptyCount === 1) {
+                    return emptyIndex;
+                }
+            }
+            return -1;
+        }
+        
+        // Проверка результата игры
+        function checkResult() {
+            let roundWon = false;
+            
+            // Проверка условий победы
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                const valA = gameState[a];
+                const valB = gameState[b];
+                const valC = gameState[c];
+                
+                if (valA === '' || valB === '' || valC === '') {
+                    continue;
+                }
+                
+                if (valA === valB && valB === valC) {
+                    roundWon = true;
+                    
+                    // Подсветка выигрышной комбинации
+                    document.querySelector(`.cell[data-index="${a}"]`).style.background = 'rgba(0, 219, 222, 0.2)';
+                    document.querySelector(`.cell[data-index="${b}"]`).style.background = 'rgba(0, 219, 222, 0.2)';
+                    document.querySelector(`.cell[data-index="${c}"]`).style.background = 'rgba(0, 219, 222, 0.2)';
+                    
+                    break;
+                }
+            }
+            
+            // Если победа
+            if (roundWon) {
+                gameActive = false;
+                showResult('win', currentPlayer);
+                return;
+            }
+            
+            // Проверка на ничью
+            const roundDraw = !gameState.includes('');
+            if (roundDraw) {
+                gameActive = false;
+                showResult('draw');
+                return;
+            }
+        }
+        
+        // Показать экран результата
+        function showResult(type, winner) {
+            resultScreen.classList.remove('win-x', 'win-o', 'draw');
+            
+            if (type === 'win') {
+                resultTitle.textContent = 'Победа!';
+                resultMessage.textContent = winner === 'X' 
+                    ? 'Игрок X одержал победу!' 
+                    : vsAI ? 'ИИ одержал победу!' : 'Игрок O одержал победу!';
+                
+                resultIcon.innerHTML = '<i class="fas fa-trophy"></i>';
+                
+                if (winner === 'X') {
+                    resultScreen.classList.add('win-x');
+                } else {
+                    resultScreen.classList.add('win-o');
+                }
+            } else {
+                resultTitle.textContent = 'Ничья!';
+                resultMessage.textContent = 'Игра закончилась вничью!';
+                resultIcon.innerHTML = '<i class="fas fa-handshake"></i>';
+                resultScreen.classList.add('draw');
+            }
+            
+            resultScreen.classList.add('active');
+        }
+        
+        // Обновить отображение текущего хода
+        function updatePlayerTurn() {
+            const turnIcon = playerTurn.querySelector('.turn-icon');
+            const turnText = playerTurn.querySelector('span');
+            
+            // Очистить классы
+            turnIcon.classList.remove('player-x', 'player-o');
+            turnText.classList.remove('player-x', 'player-o');
+            
+            // Установить новые классы
+            if (currentPlayer === 'X') {
+                turnIcon.classList.add('player-x');
+                turnText.classList.add('player-x');
+                turnText.innerHTML = `Ход: <span class="player-x">${vsAI && currentPlayer === 'X' ? 'Ваш ход' : 'Игрок X'}</span>`;
+            } else {
+                turnIcon.classList.add('player-o');
+                turnText.classList.add('player-o');
+                turnText.innerHTML = `Ход: <span class="player-o">${vsAI && currentPlayer === 'O' ? 'Ход ИИ' : 'Игрок O'}</span>`;
+            }
+        }
+        
+        // Обновить отображение режима игры
+        function updateGameMode() {
+            const modeText = vsAI ? 'Против ИИ' : 'Два игрока';
+            const modeIcon = vsAI ? 'fa-robot' : 'fa-users';
+            
+            gameMode.innerHTML = `<i class="fas ${modeIcon}"></i><span>Режим: ${modeText}</span>`;
+        }
+        
+        // Начать новую игру
+        function startNewGame() {
+            currentPlayer = 'X';
+            gameActive = true;
+            gameState = ['', '', '', '', '', '', '', '', ''];
+            
+            // Скрыть экран результата
+            resultScreen.classList.remove('active');
+            
+            // Инициализировать поле
+            initializeBoard();
+            updatePlayerTurn();
+            updateGameMode();
+            
+            // Если игра против ИИ и ИИ ходит первым
+            if (vsAI && currentPlayer === 'O') {
+                setTimeout(makeAIMove, 800);
+            }
+        }
+        
+        // Сбросить игру и вернуться в меню
+        function returnToMenu() {
+            menuScreen.classList.remove('hidden');
+            menuScreen.classList.add('fade-in');
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('active');
+        }
+        
+        // Начать игру в выбранном режиме
+        function startGame(withAI) {
+            vsAI = withAI;
+            menuScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameScreen.classList.add('fade-in');
+            startNewGame();
+        }
+        
+        // Обработчики событий
+        vsBotBtn.addEventListener('click', () => startGame(true));
+        vsPlayerBtn.addEventListener('click', () => startGame(false));
+        restartBtn.addEventListener('click', startNewGame);
+        backToMenuBtn.addEventListener('click', returnToMenu);
+        resultRestartBtn.addEventListener('click', () => {
+            resultScreen.classList.remove('active');
+            startNewGame();
+        });
+        resultMenuBtn.addEventListener('click', returnToMenu);
+        
+        // Инициализация при загрузке
+        initializeBoard();
+    </script>
+</body>
+</html>
+               
